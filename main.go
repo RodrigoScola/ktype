@@ -2,46 +2,24 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"strings"
 
+	"github.com/RodrigoScola/ktype/pkg/app"
 	"github.com/RodrigoScola/ktype/pkg/book"
 	"github.com/RodrigoScola/ktype/pkg/display"
-	cli "github.com/urfave/cli/v2"
 	"golang.org/x/term"
 )
 
 func main() {
-	//	display.InitTea()
 
-    var contents []string
 
-	app := &cli.App{
-		Commands: []*cli.Command{
-			{
-				Name:    "file",
-				Aliases: []string{"f"},
-				Usage:   "types a file",
-				Action: func(cCtx *cli.Context) error {
-					file, err := os.Open(cCtx.Args().First())
-					if err != nil {
-						log.Fatal(err)
-					}
-					defer file.Close()
 
-					content, err := io.ReadAll(file)
-					if err != nil {
-						log.Fatal(err)
-					}
+    app, options, err := app.GetApp()
 
-                    contents= strings.Split(string(content), "\n")
-					return nil
-				},
-			},
-		},
-	}
+    fmt.Println(options)
+
 
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
@@ -59,7 +37,7 @@ func main() {
 	   mybook := book.NewBook()
 
 
-    for _, value:= range contents{
+    for _, value:= range options.Contents {
 	   mybook.Add(book.NewUserSentence(value))
 
     }
