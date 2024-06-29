@@ -22,6 +22,22 @@ func (s *Sentence) Length() int {
     return curr
 }
 
+func (s* Sentence) GetLast() *Letter {
+    for i := len(s.Letters) -1; i >= 0; i-- {
+        if s.Letters[i].Ignore {
+            continue
+        }
+        return &s.Letters[i]
+    }
+    return nil
+}
+
+func (s *Sentence) RemoveLast() {
+    last := s.GetLast()
+    if last != nil {
+        last.Ignore = true
+    }
+}
 func (s* Sentence) Remove(ind int) {
     curr :=0;
     for i := 0; i < len(s.Letters); i++ {
@@ -29,9 +45,10 @@ func (s* Sentence) Remove(ind int) {
             continue
         } else if curr == ind  {
             s.Letters[curr].Ignore = true;
-        } else {
-        curr++
+
+            continue
         }
+        curr++
     }
 
 }
