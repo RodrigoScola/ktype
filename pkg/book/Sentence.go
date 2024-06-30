@@ -7,8 +7,8 @@ import (
 )
 
 type Sentence struct {
-	Correct BaseSentence
-	Current BaseSentence
+Correct BaseSentence `json:"correct"`
+Current BaseSentence `json:"base"`
 }
 
 func ToLetters(str string) []Letter {
@@ -23,33 +23,46 @@ func ToLetters(str string) []Letter {
 	return letters
 }
 
+func ToSentences(strs []string) []Sentence {
+	sentences := make([]Sentence, len(strs))
+
+	for i := range strs {
+		sentences = append(sentences, Sentence{
+			Correct: BaseSentence{Letters: ToLetters(strs[i])},
+			Current: BaseSentence{Letters: []Letter{}},
+		})
+	}
+	return sentences
+}
+
 func (s *Sentence) Complete() bool {
-    if strings.Compare(s.Correct.String(), s.Current.String()) == 0 { return true
-    }
+	if strings.Compare(s.Correct.String(), s.Current.String()) == 0 {
+		return true
+	}
 	return false
 }
 
 func (s *Sentence) Display(primary lipgloss.Style, secondary lipgloss.Style) string {
 	ind := 0
-    isWrong := false
+	isWrong := false
 	var sb strings.Builder
 	for _, char := range s.Current.Letters {
 		if char.Ignore == true {
 			continue
 		}
 		if isWrong == false && char.Char == s.Correct.Letters[ind].Char {
-            sb.WriteString(primary.Render(string(char.Char)))
-            ind++
+			sb.WriteString(primary.Render(string(char.Char)))
+			ind++
 		} else {
-            isWrong = true
+			isWrong = true
 
-            sb.WriteString(secondary.Render(string(char.Char)))
-        }
+			sb.WriteString(secondary.Render(string(char.Char)))
+		}
 
 	}
-    for i := ind  ; i < s.Correct.Length() ; i++ {
-            sb.WriteByte(s.Correct.Letters[i].Char)
-    }
+	for i := ind; i < s.Correct.Length(); i++ {
+		sb.WriteByte(s.Correct.Letters[i].Char)
+	}
 
 	return sb.String()
 }

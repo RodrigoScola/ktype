@@ -1,10 +1,10 @@
 package display
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/RodrigoScola/ktype/pkg/book"
-	"github.com/RodrigoScola/ktype/pkg/sessions"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -17,14 +17,14 @@ type model struct {
 	styles *styles
 	height int
 	Input  textinput.Model
-    session *sessions.TypingSession
+    Book *book.Book
 }
 
-func New(session *sessions.TypingSession) *model {
+func New(session *book.Book) *model {
 	answerField := textinput.New()
 	styles := DefaultStyles()
 	return &model{
-		session: session, Input: answerField,
+		Book: session, Input: answerField,
 		styles: styles,
 	}
 }
@@ -67,21 +67,24 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c":
 			return m, tea.Quit
 		case "backspace":
-			m.session.Book.Current().Current.RemoveLast()
+			m.Book.Current().Current.RemoveLast()
 		case "enter":
 			m.index++
 			m.Input.SetValue("done!")
 			return m, nil
 		default:
-			m.session.Book.Current().Current.Add(book.Letter{
+			m.Book.Current().Current.Add(book.Letter{
 				Char:      msg.String()[0],
 				Ignore:    false,
 				CreatedAt: time.Now(),
 			})
 		}
 	}
-    if m.session.Book.Current().Complete() {
-        m.session.Book.Next()
+    if m.Book.Current().Complete() {
+        fmt.Println("saving")
+        //m.Book.Session.Save()
+        fmt.Println("saved")
+        m.Book.Next()
     }
 	m.Input, cmd = m.Input.Update(msg)
 
@@ -92,7 +95,7 @@ func (m model) View() string {
 	if m.width == 0 {
 		return "loading..."
 	}
-	view := m.session.Book.Current().Display(m.styles.Primary, m.styles.Secondary)
+	view := m.Book.Current().Display(m.styles.Primary, m.styles.Secondary)
 
 	return lipgloss.Place(
 		m.width, m.height, lipgloss.Center, lipgloss.Center,

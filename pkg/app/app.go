@@ -2,15 +2,13 @@ package app
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/RodrigoScola/ktype/pkg/book"
 	"github.com/RodrigoScola/ktype/pkg/display"
-	"github.com/RodrigoScola/ktype/pkg/sessions"
+	filesessions "github.com/RodrigoScola/ktype/pkg/file_sessions"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/urfave/cli/v2"
 )
@@ -21,67 +19,43 @@ type Options struct {
 
 func sessionCommand(_ *Options) *cli.Command {
 	return &cli.Command{Name: "session", Aliases: []string{"s"}, Usage: "Retrieves a session", Action: func(context *cli.Context) error {
-		fmt.Println("")
-		sessions.Setup()
-		all_names, err := os.ReadDir(filepath.Join(".", "data", "sessions"))
+
+		var sess_name string
+		names, err := filesessions.GetSessionNames()
+
 		if err != nil {
 			return err
-		}
-		names := make([]string, 0)
-		for _, entry := range all_names {
-			if entry.IsDir() {
-				continue
-			}
-			names = append(names, entry.Name())
 		}
 
 		names = append(names, "create_session")
 
-		var sessionname string
-		p := display.NewSessionMenu(names, &sessionname)
-
-		if err := p.Run(); err != nil {
-			log.Fatalf("err : %w", err)
-		}
-		var sess *sessions.Session
-		if strings.Compare(sessionname, "create_session") == 0 {
-			var new_session_name string
-
-			s := display.NewCreateSessionMenu(&new_session_name)
-
-			if err := s.Run(); err != nil {
-				log.Fatalf("err : %w", err)
-			}
-			fmt.Println(new_session_name)
-			ex, err := sessions.Exists(new_session_name)
-			if err != nil {
-				return err
-			}
-			if *ex == false {
-				createNewSession(new_session_name)
-			} else {
-				sess, err = sessions.GetSession(new_session_name)
-				if err != nil {
-					return err
-				}
-				fmt.Println(sess)
-			}
-		} else {
-			sess, err = sessions.GetSession(sessionname)
-			if err != nil {
-				return err
-			}
-		}
-		mybook := book.NewBook()
-		for _, str := range sess.File {
-			if len(str) == 0 {
-				continue
-			}
-			mybook.Add(book.NewUserSentence(str))
+		form := display.NewSessionMenu(names, &sess_name)
+		if err := form.Run(); err != nil {
+			return err
 		}
 
+		sess, err := getSession(sess_name)
 
-		m := display.New(sessions.NewTypingSession(mybook))
+		if err != nil {
+			return err
+		}
+
+        goodEntries := make([]book.Sentence, 0)
+
+            //make this better
+        for _,v := range *&sess.Book.Sentences {
+            if len(v.Current.Letters) == 0 {
+                goodEntries = append(goodEntries, v)
+            }
+        }
+
+		mybook := book.NewBook(goodEntries)
+        mybook.Session = sess
+        fmt.Println(sess.Name)
+        sess.Book = mybook
+        fmt.Println(sess)
+
+		m := display.New(mybook)
 		m.Input.Focus()
 		f, err := tea.LogToFile("debug.log", "debug")
 		if err != nil {
@@ -89,31 +63,50 @@ func sessionCommand(_ *Options) *cli.Command {
 		}
 		defer f.Close()
 
-		mn := tea.NewProgram(m, tea.WithAltScreen())
+		p := tea.NewProgram(m, tea.WithAltScreen())
 
-		if _, err := mn.Run(); err != nil {
+		if _, err := p.Run(); err != nil {
 			log.Fatalf("err : %w", err)
 		}
-
 		return nil
+
 	}}
 }
 
-func createNewSession(session_name string) error {
-	file, err := os.Open(session_name)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-	content, err := io.ReadAll(file)
-	if err != nil {
-		return err
+func getSession(sess_name string) (*filesessions.FileSession, error) {
+	if strings.Compare(sess_name, "create_session") != 0 {
+		sess, err := filesessions.GetSession(sess_name)
+		if err != nil {
+			return nil, err
+		}
+		return sess, nil
+
 	}
 
-	sess := sessions.NewSession(session_name, strings.Split(string(content), "\n"))
-	fmt.Println(sess)
-	sessions.Save(sess)
-	return nil
+	var sess_filepath string
+	menu := display.NewCreateSessionMenu(&sess_filepath)
+	if err := menu.Run(); err != nil {
+		return nil, err
+	}
+	file, err := os.ReadFile(sess_filepath)
+	if err != nil {
+		return nil, err
+	}
+	sentences := strings.Split(string(file), "\n")
+	bookSentences := []book.Sentence{}
+	for i := range sentences {
+		if len(sentences[i]) > 0 {
+			bookSentences = append(bookSentences, book.NewUserSentence(sentences[i]))
+		}
+	}
+
+	sess, err := filesessions.Save(filesessions.New(
+		&sess_filepath, &sentences, &bookSentences,
+	))
+	if err != nil {
+		return nil, err
+	}
+	return sess, nil
 }
 
 func GetApp() (*cli.App, *Options, error) {

@@ -5,13 +5,13 @@ import (
 	"time"
 )
 type Letter struct {
-    Char byte;
-    CreatedAt time.Time
-    Ignore bool
+    Char byte `json:"char"`
+    CreatedAt time.Time `json:"createdAt"`
+    Ignore bool `json:"ignore"`
 }
 
 type BaseSentence struct {
-    Letters []Letter
+Letters []Letter `json:"letters"`
 }
 func (s *BaseSentence) Length() int {
     curr := 0;

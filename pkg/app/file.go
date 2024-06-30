@@ -8,7 +8,6 @@ import (
 
 	"github.com/RodrigoScola/ktype/pkg/book"
 	"github.com/RodrigoScola/ktype/pkg/display"
-	"github.com/RodrigoScola/ktype/pkg/sessions"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/urfave/cli/v2"
 )
@@ -31,7 +30,7 @@ func fileCommand(opts *Options) *cli.Command {
 				log.Fatal(err)
 			}
 
-			opts.Book = book.NewBook()
+			opts.Book = book.NewBook([]book.Sentence{})
 			for _, str := range strings.Split(string(content), "\n") {
 				if len(str) == 0 {
 					continue
@@ -39,7 +38,7 @@ func fileCommand(opts *Options) *cli.Command {
 				opts.Book.Add(book.NewUserSentence(str))
 			}
 
-			m := display.New(sessions.NewTypingSession(opts.Book))
+			m := display.New(opts.Book)
 			m.Input.Focus()
 			f, err := tea.LogToFile("debug.log", "debug")
 			if err != nil {
