@@ -2,16 +2,18 @@ package book
 
 import (
 	"strings"
+	"time"
 )
 type Letter struct {
     Char byte;
+    CreatedAt time.Time
     Ignore bool
 }
 
-type Sentence struct {
+type BaseSentence struct {
     Letters []Letter
 }
-func (s *Sentence) Length() int {
+func (s *BaseSentence) Length() int {
     curr := 0;
     for i := 0; i < len(s.Letters); i++ {
         if  s.Letters[i].Ignore == true {
@@ -22,7 +24,7 @@ func (s *Sentence) Length() int {
     return curr
 }
 
-func (s* Sentence) GetLast() *Letter {
+func (s* BaseSentence) GetLast() *Letter {
     for i := len(s.Letters) -1; i >= 0; i-- {
         if s.Letters[i].Ignore {
             continue
@@ -32,13 +34,13 @@ func (s* Sentence) GetLast() *Letter {
     return nil
 }
 
-func (s *Sentence) RemoveLast() {
+func (s *BaseSentence) RemoveLast() {
     last := s.GetLast()
     if last != nil {
         last.Ignore = true
     }
 }
-func (s* Sentence) Remove(ind int) {
+func (s* BaseSentence) Remove(ind int) {
     curr :=0;
     for i := 0; i < len(s.Letters); i++ {
         if  s.Letters[i].Ignore {
@@ -54,12 +56,12 @@ func (s* Sentence) Remove(ind int) {
 }
 
 
-func (s *Sentence) Add(letter Letter) *Sentence {
+func (s *BaseSentence) Add(letter Letter) *BaseSentence {
     s.Letters = append(s.Letters, letter)
     return s
 }
 
-func (s *Sentence) String() string {
+func (s *BaseSentence) String() string {
     var sb strings.Builder
 
     for _, c := range s.Letters {

@@ -1,4 +1,4 @@
-package display
+package colors
 
 type Colors struct {
     Reset       string

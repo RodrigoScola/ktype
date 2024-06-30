@@ -3,27 +3,27 @@ package book
 
 type Book struct {
     sentenceIndex int
-    Sentences []UserSentence
+    Sentences []Sentence
 }
 
-func (b * Book) Add(sentence UserSentence) {
+func (b * Book) Add(sentence Sentence) {
 
     b.Sentences = append(b.Sentences, sentence)
 }
 
-func (b *Book) Current() *UserSentence{
+func (b *Book) Current() *Sentence{
     return &b.Sentences[b.sentenceIndex]
 }
-func (b *Book) Next() *UserSentence{
+func (b *Book) Next() *Sentence{
     b.sentenceIndex += 1
     return b.Current()
 }
 
 
 
-func NewBook() Book {
-    return Book{
-        Sentences: make([]UserSentence, 0),
+func NewBook() *Book {
+    return &Book{
+        Sentences: make([]Sentence, 0),
         sentenceIndex: 0,
     }
 }
