@@ -13,6 +13,9 @@ type Letter struct {
 type BaseSentence struct {
 Letters []Letter `json:"letters"`
 }
+
+
+
 func (s *BaseSentence) Length() int {
     curr := 0;
     for i := 0; i < len(s.Letters); i++ {

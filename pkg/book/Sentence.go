@@ -7,7 +7,7 @@ import (
 )
 
 type Sentence struct {
-Correct BaseSentence `json:"correct"`
+Correct string `json:"correct"`
 Current BaseSentence `json:"base"`
 }
 
@@ -28,7 +28,7 @@ func ToSentences(strs []string) []Sentence {
 
 	for i := range strs {
 		sentences = append(sentences, Sentence{
-			Correct: BaseSentence{Letters: ToLetters(strs[i])},
+			Correct: strs[i],
 			Current: BaseSentence{Letters: []Letter{}},
 		})
 	}
@@ -36,33 +36,31 @@ func ToSentences(strs []string) []Sentence {
 }
 
 func (s *Sentence) Complete() bool {
-	if strings.Compare(s.Correct.String(), s.Current.String()) == 0 {
+	if strings.Compare(s.Correct, s.Current.String()) == 0 {
 		return true
 	}
 	return false
 }
 
-func (s *Sentence) Display(primary lipgloss.Style, secondary lipgloss.Style) string {
-	ind := 0
-	isWrong := false
-	var sb strings.Builder
-	for _, char := range s.Current.Letters {
-		if char.Ignore == true {
-			continue
-		}
-		if isWrong == false && char.Char == s.Correct.Letters[ind].Char {
-			sb.WriteString(primary.Render(string(char.Char)))
-			ind++
-		} else {
-			isWrong = true
-
-			sb.WriteString(secondary.Render(string(char.Char)))
-		}
-
-	}
-	for i := ind; i < s.Correct.Length(); i++ {
-		sb.WriteByte(s.Correct.Letters[i].Char)
-	}
+func (s *Sentence) Display(primary lipgloss.Style, secondary lipgloss.Style, text lipgloss.Style) string {
+	 ind := 0
+	 isWrong := false
+	 var sb strings.Builder
+	 for _, char := range s.Current.Letters {
+	 	if char.Ignore == true {
+	 		continue
+	 	}
+	 	if isWrong == false && char.Char == s.Correct[ind] {
+	 		sb.WriteString(primary.Render(string(char.Char)))
+	 		ind++
+	 	} else {
+	 		isWrong = true
+	 		sb.WriteString(secondary.Render(string(char.Char)))
+	 	}
+	 }
+	 for i := ind; i < len(s.Correct); i++ {
+	 	sb.WriteString(text.Render( string(s.Correct[i])))
+	 }
 
 	return sb.String()
 }
@@ -70,9 +68,7 @@ func (s *Sentence) Display(primary lipgloss.Style, secondary lipgloss.Style) str
 func NewUserSentence(sen string) Sentence {
 
 	return Sentence{
-		Correct: BaseSentence{
-			Letters: ToLetters(sen),
-		},
+		Correct: sen,
 		Current: BaseSentence{
 			Letters: make([]Letter, 0),
 		},

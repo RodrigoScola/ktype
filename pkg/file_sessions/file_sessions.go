@@ -3,7 +3,6 @@ package filesessions
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/fs"
 	"os"
 	"path"
@@ -12,62 +11,23 @@ import (
 	"github.com/RodrigoScola/ktype/pkg/book"
 )
 
-type FileSession struct {
-	Entries *[]book.Sentence `json:"book"`
-	File    *[]string
-	Name    *string
-    Book *book.Book
-}
-
-func New(
-	name *string, file *[]string, entries *[]book.Sentence,
-) *FileSession {
-	return &FileSession{
-		Name:    name,
-		File:    file,
-		Entries: entries,
-	}
-}
-
-func (f *FileSession) Save() error {
-    f.Entries = &f.Book.Sentences
-	// Modify the Save function to be a method of FileSession
-	mark, err := json.Marshal(f)
-
-    fmt.Println(f.Entries)
-	if err != nil {
-		return err
-	}
-    fmt.Println(f.Name, *f.Name)
-
-	pa := getSessionsPath() + "/" + *f.Name + ".json"
-
-	err = os.WriteFile(pa, mark, 0644)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func getSessionsPath() string {
 	return path.Join(".", "data", "sessions")
 }
-func Save(file *FileSession) (*FileSession, error) {
-	mark, err := json.Marshal(file)
+
+func Save(book *book.Book) (*book.Book, error) {
+	mark, err := json.Marshal(book)
 	if err != nil {
 		return nil, err
 	}
-   fmt.Println(file, "this is the file")
-	 pa := getSessionsPath() + "/" + *file.Name + ".json"
-	 fmt.Println(pa)
+	pa := getSessionsPath() + "/" + book.Name + ".json"
 
 	err = os.WriteFile(pa, mark, 0644)
-	 if err != nil {
-	 	return nil, err
-	 }
+	if err != nil {
+		return nil, err
+	}
 
-	return file, nil
+	return book, nil
 }
 
 func GetSessionNames() ([]string, error) {
@@ -84,9 +44,8 @@ func GetSessionNames() ([]string, error) {
 	return names, nil
 
 }
-func GetSession(name string) (*FileSession, error) {
-
-    var filesession FileSession
+func GetSession(name string) (*book.Book, error) {
+	var filesession book.Book
 	files, err := os.ReadDir(getSessionsPath())
 	if err != nil {
 		return nil, err
@@ -98,20 +57,20 @@ func GetSession(name string) (*FileSession, error) {
 			break
 		}
 	}
-    if sess_file == nil  {
-        return nil, errors.New("file not found")
-    }
-    f , err := os.ReadFile(getSessionsPath() + "/"+ name)
-    if err != nil {
-        return nil, err
-    }
+	if sess_file == nil {
+		return nil, errors.New("file not found")
+	}
+	pa := getSessionsPath() + "/" + name
+	f, err := os.ReadFile(pa)
+	if err != nil {
+		return nil, err
+	}
 
+	err = json.Unmarshal(f, &filesession)
+	if err != nil {
+		return nil, err
+	}
 
-    err = json.Unmarshal(f, &filesession)
-    if err != nil {
-        return nil, err
-    }
-
-    return &filesession, nil
+	return &filesession, nil
 
 }

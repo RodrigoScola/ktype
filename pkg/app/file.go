@@ -30,7 +30,7 @@ func fileCommand(opts *Options) *cli.Command {
 				log.Fatal(err)
 			}
 
-			opts.Book = book.NewBook([]book.Sentence{})
+			opts.Book = book.NewBook(cCtx.Args().First(),[]book.Sentence{})
 			for _, str := range strings.Split(string(content), "\n") {
 				if len(str) == 0 {
 					continue

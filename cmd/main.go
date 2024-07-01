@@ -8,7 +8,6 @@ import (
 	"github.com/RodrigoScola/ktype/pkg/book"
 	"golang.org/x/term"
 )
-
 func main() {
 	var pipedInput string = "asodif"
 	// Check if there's piped input

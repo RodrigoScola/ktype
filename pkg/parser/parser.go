@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/hellflame/argparse"
@@ -30,7 +29,6 @@ func GetOpts() (*Opts, error) {
 
 
 	err := parser.Parse(os.Args)
-    fmt.Println("the things",  *file)
 
 	if err != nil {
 		return nil, err
