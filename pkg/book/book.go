@@ -1,10 +1,15 @@
 package book
 
+import (
+	"fmt"
+
+	"github.com/RodrigoScola/ktype/pkg/formatting"
+)
 
 type Book struct {
 	sentenceIndex int
 	Sentences     []Sentence `json:"sentences"`
-Name string `json:"name"`
+	Name          string     `json:"name"`
 }
 
 func (b *Book) Add(sentence Sentence) {
@@ -20,28 +25,33 @@ func (b *Book) Next() *Sentence {
 }
 
 func (b *Book) FilledSentences() []*Sentence {
-    filled := []*Sentence{}
-    for i := range b.Sentences {
-        if len (b.Sentences[i].Current.Letters) == 0 {
-            break
-        }
-        filled = append(filled, &b.Sentences[i])
-    }
-    return filled
+	filled := make([]*Sentence, 0)
+        fmt.Println("he y")
+	for _, v := range b.Sentences {
+		if len(v.Current.Letters) == 0 {
+            fmt.Println("v.Current.Letters", v.Current.Letters)
+			continue
+		}
+		v.Correct = formatting.FormatAll(v.Correct)
+		filled = append(filled, &v)
+	}
+	return filled
 }
 func (b *Book) Unfilled() []*Sentence {
-    unfilled := []*Sentence{}
-    for i := range b.Sentences {
-        if len (b.Sentences[i].Current.Letters) == 0 {
-            unfilled = append(unfilled, &b.Sentences[i])
-        }
-    }
-    return unfilled
+	unfilled := []*Sentence{}
+	for _, v := range b.Sentences {
+		if len(v.Current.Letters) > 0 {
+			continue
+		}
+		v.Correct = formatting.FormatAll(v.Correct)
+		unfilled = append(unfilled, &v)
+	}
+	return unfilled
 }
 
-func NewBook(name string ,sentences []Sentence) *Book {
+func NewBook(name string, sentences []Sentence) *Book {
 	return &Book{
-        Name: name,
+		Name:          name,
 		Sentences:     sentences,
 		sentenceIndex: 0,
 	}

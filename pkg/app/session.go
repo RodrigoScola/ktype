@@ -12,6 +12,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/urfave/cli/v2"
 )
+
 func sessionCommand(_ *Options) *cli.Command {
 	return &cli.Command{Name: "session", Aliases: []string{"s"}, Usage: "Retrieves a session", Action: func(context *cli.Context) error {
 
@@ -40,10 +41,10 @@ func sessionCommand(_ *Options) *cli.Command {
 		//make this better
 		for _, v := range sess.Sentences {
 			if len(v.Current.Letters) > 0 {
-                continue
+				continue
 			}
-            v.Correct = formatting.FormatAll(v.Correct)
-            goodEntries = append(goodEntries, v)
+			v.Correct = formatting.FormatAll(v.Correct)
+			goodEntries = append(goodEntries, v)
 
 		}
 		sess.Sentences = goodEntries

@@ -26,6 +26,15 @@ func (s *BaseSentence) Length() int {
     }
     return curr
 }
+func (s* BaseSentence) GetFirst() *Letter {
+    for i :=0; i < len(s.Letters);i++ {
+        if s.Letters[i].Ignore {
+            continue
+        }
+        return &s.Letters[i]
+    }
+    return nil
+}
 
 func (s* BaseSentence) GetLast() *Letter {
     for i := len(s.Letters) -1; i >= 0; i-- {

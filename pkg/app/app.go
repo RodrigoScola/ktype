@@ -15,13 +15,11 @@ type Options struct {
 
 func profileCommand(_ *Options) *cli.Command {
 	return &cli.Command{Name: "profile", Aliases: []string{"p"}, Usage: "Shows the profile info", Action: func(context *cli.Context) error {
+		fmt.Println("The Profile Info")
 
-        fmt.Println("The Profile Info")
-
-        fmt.Println("sessions -> ")
-        if err := calc(); err != nil {
-            return err
-        }
+		if err := calc(); err != nil {
+			return err
+		}
 
 		return nil
 
@@ -29,30 +27,29 @@ func profileCommand(_ *Options) *cli.Command {
 }
 
 func calc() error {
-    names, err := filesessions.GetSessionNames()
-    if err != nil { return err }
-    books := []*book.Book{}
-    wpms := []float64{}
-    for i := range names {
-        b , err := filesessions.GetSession(names[i])
-        if err != nil { return err }
-        books = append(books, b)
-        filled := b.FilledSentences()
+	names, err := filesessions.GetSessionNames()
 
-        for k := range filled {
-            wpm := statistics.CalculateWPM(
-                filled[k].Current.Letters[0].CreatedAt,
-                filled[k].Current.GetLast().CreatedAt,
-                    len(filled[k].Correct),
-                )
-            wpms = append(wpms, wpm)
-        }
-    }
-    fmt.Println(wpms)
-    return nil
+	if err != nil {
+		return err
+	}
+	for _, name := range names {
+		sess, err := filesessions.GetSession(name)
+		if err != nil {
+			return err
+		}
+		for _, v := range sess.Sentences {
+			if v.Current.GetFirst() == nil && v.Current.GetLast() == nil {
+				continue
+			}
+			fmt.Printf("%.2f\n", statistics.CalculateWPM(v.Current.GetFirst().CreatedAt,
+				v.Current.GetLast().CreatedAt, len(v.Current.Letters)))
+
+		}
+
+	}
+
+	return nil
 }
-
-
 
 func GetApp() (*cli.App, *Options, error) {
 	opts := Options{}

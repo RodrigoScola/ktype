@@ -1,9 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
-
 
 	"github.com/RodrigoScola/ktype/pkg/app"
 )
@@ -13,6 +13,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	fmt.Println("hey there this is pretty cool")
 
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
@@ -24,7 +26,6 @@ func main() {
 	// 	fmt.Println("Error: ", err)
 	// 	return
 	// }
-
 
 	//fmt.Println(mybook.Current().Display())
 
